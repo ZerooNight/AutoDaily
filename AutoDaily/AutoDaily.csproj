@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>AutoDaily</AssemblyName>
+    <RootNamespace>AutoDaily</RootNamespace>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Product>全自動每日</Product>
+    <AssemblyTitle>全自動每日</AssemblyTitle>
+    <SatelliteResourceLanguages>zh-Hant</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- Release 版要求系統管理員權限：各自動化工具都需要管理員權限，
+       由本程式以管理員身分啟動它們就不會每個都跳 UAC。 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
+
+</Project>

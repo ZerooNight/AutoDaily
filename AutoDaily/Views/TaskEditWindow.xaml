@@ -1,0 +1,248 @@
+<Window x:Class="AutoDaily.Views.TaskEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="編輯任務"
+        Width="600" MaxHeight="900" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        WindowStyle="None" ResizeMode="NoResize"
+        Background="{StaticResource WindowBg}"
+        FontFamily="{StaticResource UiFont}"
+        Foreground="{StaticResource TextBrush}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="50" GlassFrameThickness="0" ResizeBorderThickness="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Border x:Name="Root" Background="{StaticResource WindowBg}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Margin="24,0,8,0">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <Border Width="24" Height="24" CornerRadius="7"
+                            Background="{Binding Color, Converter={StaticResource HexBrush}, ConverterParameter=0.18}">
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12.5" FontWeight="Bold"
+                                   Foreground="{Binding Color, Converter={StaticResource HexBrush}}" Text="{Binding Badge}" />
+                    </Border>
+                    <TextBlock x:Name="TitleText" Margin="10,0,0,0" VerticalAlignment="Center"
+                               FontSize="15" FontWeight="SemiBold" Text="編輯任務" />
+                </StackPanel>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Center" Click="Cancel_Click"
+                        Content="&#xE8BB;" Style="{StaticResource CloseButton}"
+                        WindowChrome.IsHitTestVisibleInChrome="True" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="1" Padding="24,0,24,20" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Margin="0,6,0,9" Style="{StaticResource FieldLabel}" Text="快速套用預設（會保留程式路徑）" />
+                    <WrapPanel x:Name="PresetPanel" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="96" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="名稱" />
+                            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="圖示文字" />
+                            <TextBox MaxLength="2" HorizontalContentAlignment="Center"
+                                     Text="{Binding Badge, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="代表色" />
+                    <WrapPanel x:Name="SwatchPanel" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="自動化程式路徑" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding ExePath, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Grid.Column="1" Height="38" Margin="8,0,0,0" Click="Browse_Click"
+                                Style="{StaticResource SecondaryButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0,1,7,0" VerticalAlignment="Center"
+                                           FontFamily="{StaticResource IconFont}" FontSize="12" Text="&#xE8B7;" />
+                                <TextBlock VerticalAlignment="Center" Text="瀏覽…" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="啟動參數" />
+                    <TextBox FontFamily="{StaticResource MonoFont}" Text="{Binding Arguments, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Border Margin="0,12,0,0" Padding="12,10" Background="#127C6CFF" BorderBrush="#2E7C6CFF"
+                            BorderThickness="1" CornerRadius="10"
+                            Visibility="{Binding Tip, Converter={StaticResource EmptyCollapsed}}">
+                        <Grid>
+                            <TextBlock Margin="0,2,0,0" FontFamily="{StaticResource IconFont}" FontSize="13"
+                                       Foreground="#A99BFF" Text="&#xE946;" />
+                            <TextBlock Margin="24,0,0,0" FontSize="12.5" Foreground="#CBC4FF"
+                                       LineHeight="20" Text="{Binding Tip}" TextWrapping="Wrap" />
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="遊戲程式名稱" />
+                    <TextBox Text="{Binding GameProcesses, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Style="{StaticResource HintText}"
+                               Text="多個請用 ; 分隔。判斷「完成」時不會等待遊戲本身結束；開啟下方選項時，完成後會自動關閉這些程式。" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="14" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="整體逾時（分鐘，0 = 不限）" />
+                            <TextBox Text="{Binding TimeoutMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="遊戲需在幾分鐘內啟動（0 = 不檢查）" />
+                            <TextBox Text="{Binding GameStartTimeoutMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Style="{StaticResource HintText}"
+                               Text="工具開啟後若一直沒有啟動遊戲，通常代表它沒有開始執行任務（例如自動執行沒設定好），會提早判定失敗並換下一項。" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="工作目錄（選填，預設為程式所在資料夾）" />
+                    <TextBox Text="{Binding WorkingDirectory, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <StackPanel Margin="0,20,0,0">
+                        <CheckBox Content="完成後關閉遊戲（確保下一個遊戲能順利啟動；模擬器會正常關機）" IsChecked="{Binding KillGameAfter}"
+                                  Style="{StaticResource ToggleSwitch}" />
+                        <CheckBox Margin="0,12,0,0" Content="等待它開出來的子程式也結束（建議開啟）" IsChecked="{Binding TrackChildren}"
+                                  Style="{StaticResource ToggleSwitch}" />
+                        <CheckBox Margin="0,12,0,0" Content="遊戲在最前面時，把跑出遊戲視窗的滑鼠游標移回遊戲中央"
+                                  IsChecked="{Binding KeepCursorInGame}" Style="{StaticResource ToggleSwitch}" />
+                        <TextBlock Margin="52,4,0,0" Style="{StaticResource HintText}"
+                                   Text="BetterGI 有些步驟會用真的滑鼠點擊；遊戲是視窗模式時，游標停在外面會點到桌面或其他視窗，遊戲因此失去焦點而暫停。開啟後，執行期間滑鼠會被拉回遊戲裡，要用電腦時請先按「停止」。" />
+                    </StackPanel>
+
+                    <!-- ═════ 模擬器 ═════ -->
+                    <Border Margin="0,24,0,0" Padding="18,4,18,18" Background="{StaticResource CardBg}"
+                            BorderBrush="{StaticResource Line1}" BorderThickness="1" CornerRadius="14">
+                        <StackPanel>
+                            <StackPanel Margin="0,14,0,0" Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource IconFont}" FontSize="14"
+                                           Foreground="#A99BFF" Text="&#xE8EA;" />
+                                <TextBlock Margin="9,0,0,0" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"
+                                           Text="模擬器（手機遊戲）" />
+                            </StackPanel>
+                            <CheckBox Margin="0,14,0,0" Content="執行前先開啟 MuMu 模擬器，等它開機完成再啟動自動化程式"
+                                      IsChecked="{Binding StartEmulator}" Style="{StaticResource ToggleSwitch}" />
+                            <TextBlock Margin="52,4,0,0" Style="{StaticResource HintText}"
+                                       Text="手機遊戲的自動化程式一開就會去找模擬器，找不到就要手動選。開啟後會直接開好指定的模擬器（不必先開多開器再按啟動），等 Android 開機完成才啟動自動化程式。" />
+
+                            <StackPanel Visibility="{Binding StartEmulator, Converter={StaticResource BoolVis}}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="MuMuManager.exe 位置（MuMu 安裝資料夾裡的 nx_main 或 shell）" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding EmulatorPath, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Button Grid.Column="1" Height="38" Margin="8,0,0,0" Click="BrowseEmulator_Click"
+                                            Style="{StaticResource SecondaryButton}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Margin="0,1,7,0" VerticalAlignment="Center"
+                                                       FontFamily="{StaticResource IconFont}" FontSize="12" Text="&#xE8B7;" />
+                                            <TextBlock VerticalAlignment="Center" Text="瀏覽…" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="要開啟的模擬器" />
+                                <Border HorizontalAlignment="Left" Padding="2" Background="{StaticResource InputBg}"
+                                        BorderBrush="#2A3144" BorderThickness="1" CornerRadius="10">
+                                    <WrapPanel x:Name="EmulatorPanel" />
+                                </Border>
+                                <TextBlock x:Name="EmulatorStatus" Style="{StaticResource HintText}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ═════ 完成檢查 ═════ -->
+                    <Border Margin="0,24,0,0" Padding="18,4,18,18" Background="{StaticResource CardBg}"
+                            BorderBrush="{StaticResource Line1}" BorderThickness="1" CornerRadius="14">
+                        <StackPanel>
+                            <StackPanel Margin="0,14,0,0" Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource IconFont}" FontSize="14"
+                                           Foreground="#A99BFF" Text="&#xE9D9;" />
+                                <TextBlock Margin="9,0,0,0" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"
+                                           Text="完成檢查（看記錄檔判斷是否真的跑完）" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource HintText}"
+                                       Text="工具結束後會比對它這次寫入的記錄檔：沒出現完成訊息、出現未完成訊息、或記錄檔太久沒動（卡住）時，會關掉重跑。" />
+
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="記錄檔位置（相對於程式所在資料夾，一行一個，檔名可用 *）" />
+                            <TextBox Style="{StaticResource MultiLineBox}" MinHeight="40"
+                                     Text="{Binding LogPaths, UpdateSourceTrigger=PropertyChanged}" TextChanged="LogPaths_TextChanged" />
+                            <TextBlock x:Name="LogFilesStatus" Style="{StaticResource HintText}" />
+
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="完成時會出現的文字（一行一個，符合任一行即可；留空代表不要求）" />
+                            <TextBox Style="{StaticResource MultiLineBox}" MinHeight="40"
+                                     Text="{Binding SuccessMarkers, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="代表沒完成的文字（一行一個，出現任一行就重跑）" />
+                            <TextBox Style="{StaticResource MultiLineBox}"
+                                     Text="{Binding FailureMarkers, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Style="{StaticResource HintText}"
+                                       Text="以 re: 開頭的行是正規表示式，# 開頭是註解。三欄都留空就不做完成檢查。" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="14" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="沒完成時自動重跑幾次" />
+                                    <TextBox Text="{Binding MaxRetries, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="記錄檔幾分鐘沒動視為卡住（0 = 不檢查）" />
+                                    <TextBox Text="{Binding LogStallMinutes, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Row="2" Padding="24,14" Background="{StaticResource PanelBg}"
+                    BorderBrush="{StaticResource Line1}" BorderThickness="0,1,0,0">
+                <Grid>
+                    <Button x:Name="DeleteButton" HorizontalAlignment="Left" Click="Delete_Click"
+                            Style="{StaticResource DangerGhostButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="0,1,7,0" VerticalAlignment="Center"
+                                       FontFamily="{StaticResource IconFont}" FontSize="12" Text="&#xE74D;" />
+                            <TextBlock VerticalAlignment="Center" Text="刪除任務" />
+                        </StackPanel>
+                    </Button>
+                    <TextBlock x:Name="ErrorText" Margin="0,0,200,0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               FontSize="12" Foreground="{StaticResource DangerBrush}" />
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Button MinWidth="88" Click="Cancel_Click" Content="取消" IsCancel="True"
+                                Style="{StaticResource SecondaryButton}" />
+                        <Button MinWidth="104" Height="38" Margin="10,0,0,0" Click="Save_Click" Content="儲存"
+                                IsDefault="True" Style="{StaticResource PrimaryButton}" FontSize="14" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

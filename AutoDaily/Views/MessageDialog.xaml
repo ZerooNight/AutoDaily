@@ -1,0 +1,33 @@
+<Window x:Class="AutoDaily.Views.MessageDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="全自動每日"
+        Width="420" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        WindowStyle="None" ResizeMode="NoResize"
+        Background="{StaticResource WindowBg}"
+        FontFamily="{StaticResource UiFont}"
+        Foreground="{StaticResource TextBrush}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40" GlassFrameThickness="0" ResizeBorderThickness="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Border Background="{StaticResource CardBg}">
+        <StackPanel>
+            <StackPanel Margin="26,24,26,0">
+                <TextBlock x:Name="TitleText" FontSize="16" FontWeight="SemiBold" />
+                <TextBlock x:Name="MessageText" Margin="0,10,0,0" FontSize="13.5" LineHeight="22"
+                           Foreground="{StaticResource TextDimBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Margin="26,24,26,22" HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button x:Name="CancelButton" MinWidth="88" Click="Cancel_Click" IsCancel="True"
+                        Style="{StaticResource SecondaryButton}" />
+                <Button x:Name="OkButton" MinWidth="96" Margin="10,0,0,0" Click="Ok_Click" IsDefault="True"
+                        Style="{StaticResource SecondaryButton}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

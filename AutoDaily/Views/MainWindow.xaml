@@ -1,0 +1,442 @@
+﻿<Window x:Class="AutoDaily.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:m="clr-namespace:AutoDaily.Models"
+        Title="全自動每日"
+        Width="800" Height="860" MinWidth="660" MinHeight="620"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" ResizeMode="CanResize"
+        Background="{StaticResource WindowBg}"
+        FontFamily="{StaticResource UiFont}"
+        Foreground="{StaticResource TextBrush}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="52" CornerRadius="0" GlassFrameThickness="0"
+                      ResizeBorderThickness="6" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+
+        <!-- ═════════════ 任務卡片 ═════════════ -->
+        <DataTemplate x:Key="TaskCardTemplate" DataType="{x:Type m:GameTask}">
+            <Border x:Name="Card" Margin="0,0,0,10"
+                    Background="{StaticResource CardBg}"
+                    BorderBrush="{StaticResource Line1}" BorderThickness="1"
+                    CornerRadius="14" SnapsToDevicePixels="True">
+                <Grid>
+                    <!-- 左側色條 -->
+                    <Border Width="3" Margin="0,18" HorizontalAlignment="Left" CornerRadius="0,3,3,0"
+                            Background="{Binding Color, Converter={StaticResource HexBrush}}" />
+
+                    <Grid Margin="8,14,14,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="30" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- 拖曳握把 + 順序 -->
+                        <StackPanel Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    Background="Transparent" Cursor="SizeAll" ToolTip="按住拖曳調整順序">
+                            <TextBlock Margin="0,0,0,5" HorizontalAlignment="Center"
+                                       FontFamily="{StaticResource MonoFont}" FontSize="10.5"
+                                       Foreground="{StaticResource TextMuteBrush}" Text="{Binding OrderText}" />
+                            <Canvas Width="9" Height="15" HorizontalAlignment="Center">
+                                <Ellipse Canvas.Left="0" Canvas.Top="0" Width="3" Height="3" Fill="#565E74" />
+                                <Ellipse Canvas.Left="6" Canvas.Top="0" Width="3" Height="3" Fill="#565E74" />
+                                <Ellipse Canvas.Left="0" Canvas.Top="6" Width="3" Height="3" Fill="#565E74" />
+                                <Ellipse Canvas.Left="6" Canvas.Top="6" Width="3" Height="3" Fill="#565E74" />
+                                <Ellipse Canvas.Left="0" Canvas.Top="12" Width="3" Height="3" Fill="#565E74" />
+                                <Ellipse Canvas.Left="6" Canvas.Top="12" Width="3" Height="3" Fill="#565E74" />
+                            </Canvas>
+                        </StackPanel>
+
+                        <!-- 遊戲徽章 -->
+                        <Grid Grid.Column="1" Width="50" Height="50" Margin="6,0,16,0" VerticalAlignment="Center">
+                            <Border Background="{Binding Color, Converter={StaticResource HexBrush}, ConverterParameter=0.14}"
+                                    BorderBrush="{Binding Color, Converter={StaticResource HexBrush}, ConverterParameter=0.45}"
+                                    BorderThickness="1" CornerRadius="14" />
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontSize="22" FontWeight="Bold"
+                                       Foreground="{Binding Color, Converter={StaticResource HexBrush}}"
+                                       Text="{Binding Badge}" />
+                            <Border x:Name="DoneDot" Width="20" Height="20" Margin="0,0,-5,-5"
+                                    HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                    Background="{StaticResource SuccessBrush}"
+                                    BorderBrush="{StaticResource CardBg}" BorderThickness="2.5"
+                                    CornerRadius="10" Visibility="Collapsed" ToolTip="今日已完成">
+                                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           FontFamily="{StaticResource IconFont}" FontSize="9" FontWeight="Bold"
+                                           Foreground="#06281B" Text="&#xE73E;" />
+                            </Border>
+                        </Grid>
+
+                        <!-- 名稱與說明 -->
+                        <StackPanel Grid.Column="2" Margin="0,0,12,0" VerticalAlignment="Center">
+                            <TextBlock FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"
+                                       Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                            <TextBlock x:Name="Sub" Margin="0,4,0,0" FontSize="12.5"
+                                       Foreground="{StaticResource TextDimBrush}"
+                                       Text="{Binding Subtitle}" TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding ExePath}" />
+                            <TextBlock Margin="0,3,0,0" FontSize="11.5" Foreground="{StaticResource TextMuteBrush}"
+                                       Text="{Binding LastRunText}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+
+                        <!-- 狀態標籤 -->
+                        <Border x:Name="Chip" Grid.Column="3" Margin="0,0,10,0" Padding="11,5"
+                                VerticalAlignment="Center" Background="#14FFFFFF" CornerRadius="12"
+                                ToolTip="{Binding Message}" ToolTipService.ShowOnDisabled="True">
+                            <StackPanel Orientation="Horizontal">
+                                <Path x:Name="Spinner" Width="12" Height="12" Margin="0,0,7,0"
+                                      VerticalAlignment="Center" Data="M 6,1 A 5,5 0 1 1 1,6"
+                                      RenderTransformOrigin="0.5,0.5" Stroke="#C4B5FD" StrokeThickness="2"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" Visibility="Collapsed">
+                                    <Path.RenderTransform>
+                                        <RotateTransform />
+                                    </Path.RenderTransform>
+                                </Path>
+                                <TextBlock x:Name="ChipText" FontSize="12" Foreground="{StaticResource TextDimBrush}"
+                                           Text="{Binding StatusText}" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- 操作 -->
+                        <StackPanel Grid.Column="4" VerticalAlignment="Center" Orientation="Horizontal">
+                            <Button Click="RunOne_Click" Content="&#xE768;"
+                                    IsEnabled="{Binding DataContext.IsIdle, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Style="{StaticResource IconButton}" ToolTip="只執行這一項（測試設定用）" />
+                            <Button Click="Edit_Click" Content="&#xE713;"
+                                    IsEnabled="{Binding DataContext.IsIdle, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    Style="{StaticResource IconButton}" ToolTip="設定" />
+                            <CheckBox Margin="10,0,0,0" IsChecked="{Binding Enabled}"
+                                      IsEnabled="{Binding DataContext.IsIdle, RelativeSource={RelativeSource AncestorType=Window}}"
+                                      Style="{StaticResource ToggleSwitch}" ToolTip="是否執行此項" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- 執行中的流動光條 -->
+                    <Rectangle x:Name="RunBar" Height="2" Margin="16,0,16,0" VerticalAlignment="Bottom"
+                               RadiusX="1" RadiusY="1" Visibility="Collapsed">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <LinearGradientBrush.RelativeTransform>
+                                    <TranslateTransform X="-1" />
+                                </LinearGradientBrush.RelativeTransform>
+                                <GradientStop Offset="0" Color="#008B5CF6" />
+                                <GradientStop Offset="0.4" Color="#FF8B5CF6" />
+                                <GradientStop Offset="0.6" Color="#FF38BDF8" />
+                                <GradientStop Offset="1" Color="#0038BDF8" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </Grid>
+            </Border>
+
+            <DataTemplate.Triggers>
+                <Trigger SourceName="Card" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Card" Property="Background" Value="{StaticResource CardHoverBg}" />
+                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource Line2}" />
+                </Trigger>
+                <DataTrigger Binding="{Binding HasExe}" Value="False">
+                    <Setter TargetName="Sub" Property="Foreground" Value="{StaticResource WarnBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding DoneToday}" Value="True">
+                    <Setter TargetName="DoneDot" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+
+                <DataTrigger Binding="{Binding ChipKind}" Value="off">
+                    <Setter TargetName="Card" Property="Opacity" Value="0.5" />
+                    <Setter TargetName="ChipText" Property="Foreground" Value="{StaticResource TextMuteBrush}" />
+                    <Setter TargetName="Chip" Property="Background" Value="#0AFFFFFF" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ChipKind}" Value="queued">
+                    <Setter TargetName="Chip" Property="Background" Value="#1A38BDF8" />
+                    <Setter TargetName="ChipText" Property="Foreground" Value="#7DD3FC" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ChipKind}" Value="done">
+                    <Setter TargetName="Chip" Property="Background" Value="#1A34D399" />
+                    <Setter TargetName="ChipText" Property="Foreground" Value="#6EE7B7" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ChipKind}" Value="success">
+                    <Setter TargetName="Chip" Property="Background" Value="#2234D399" />
+                    <Setter TargetName="ChipText" Property="Foreground" Value="#6EE7B7" />
+                    <Setter TargetName="Card" Property="BorderBrush" Value="#2E5A4A" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ChipKind}" Value="warn">
+                    <Setter TargetName="Chip" Property="Background" Value="#22FBBF24" />
+                    <Setter TargetName="ChipText" Property="Foreground" Value="#FCD34D" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ChipKind}" Value="fail">
+                    <Setter TargetName="Chip" Property="Background" Value="#26F87171" />
+                    <Setter TargetName="ChipText" Property="Foreground" Value="#FCA5A5" />
+                    <Setter TargetName="Card" Property="BorderBrush" Value="#5C2A33" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ChipKind}" Value="running">
+                    <Setter TargetName="Chip" Property="Background" Value="#2E7C6CFF" />
+                    <Setter TargetName="ChipText" Property="Foreground" Value="#D4CCFF" />
+                    <Setter TargetName="Spinner" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="RunBar" Property="Visibility" Value="Visible" />
+                    <Setter TargetName="Card" Property="BorderBrush" Value="#5B4FD9" />
+                    <Setter TargetName="Card" Property="Background" Value="#1B1C2E" />
+                    <Setter TargetName="Card" Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="30" Opacity="0.35" ShadowDepth="0" Color="#7C6CFF" />
+                        </Setter.Value>
+                    </Setter>
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard x:Name="RunAnim">
+                            <Storyboard>
+                                <DoubleAnimation RepeatBehavior="Forever" Storyboard.TargetName="Spinner"
+                                                 Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                 From="0" To="360" Duration="0:0:0.9" />
+                                <DoubleAnimation RepeatBehavior="Forever" Storyboard.TargetName="RunBar"
+                                                 Storyboard.TargetProperty="(Shape.Fill).(Brush.RelativeTransform).(TranslateTransform.X)"
+                                                 From="-1" To="1" Duration="0:0:1.8" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <StopStoryboard BeginStoryboardName="RunAnim" />
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+
+                <!-- 拖曳中：原位置只留淡淡的佔位 -->
+                <DataTrigger Binding="{Binding IsDragging}" Value="True">
+                    <Setter TargetName="Card" Property="Opacity" Value="0.18" />
+                    <Setter TargetName="Card" Property="BorderBrush" Value="#7C6CFF" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- ═════════════ 記錄 ═════════════ -->
+        <DataTemplate x:Key="LogTemplate">
+            <Grid Margin="0,1.5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="64" />
+                    <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock FontFamily="{StaticResource MonoFont}" FontSize="12"
+                           Foreground="{StaticResource TextMuteBrush}" Text="{Binding TimeText}" />
+                <Ellipse x:Name="Dot" Grid.Column="1" Width="6" Height="6" Margin="0,6,0,0"
+                         HorizontalAlignment="Left" VerticalAlignment="Top" Fill="#4B5368" />
+                <TextBlock x:Name="Msg" Grid.Column="2" FontSize="12.5"
+                           Foreground="{StaticResource TextDimBrush}" Text="{Binding Message}" TextWrapping="Wrap" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Level}" Value="Success">
+                    <Setter TargetName="Dot" Property="Fill" Value="#34D399" />
+                    <Setter TargetName="Msg" Property="Foreground" Value="#A7F3D0" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Warn">
+                    <Setter TargetName="Dot" Property="Fill" Value="#FBBF24" />
+                    <Setter TargetName="Msg" Property="Foreground" Value="#FDE68A" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Level}" Value="Error">
+                    <Setter TargetName="Dot" Property="Fill" Value="#F87171" />
+                    <Setter TargetName="Msg" Property="Foreground" Value="#FECACA" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Border x:Name="RootBorder" Background="{StaticResource WindowBg}">
+        <Grid x:Name="RootGrid" ClipToBounds="True">
+
+            <!-- 背景光暈 -->
+            <Canvas IsHitTestVisible="False">
+                <Ellipse Canvas.Left="-180" Canvas.Top="-230" Width="560" Height="460">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Offset="0" Color="#2E8B5CF6" />
+                            <GradientStop Offset="1" Color="#008B5CF6" />
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                </Ellipse>
+                <Ellipse Canvas.Right="-200" Canvas.Top="-250" Width="600" Height="480">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Offset="0" Color="#2238BDF8" />
+                            <GradientStop Offset="1" Color="#0038BDF8" />
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                </Ellipse>
+            </Canvas>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="52" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- 標題列 -->
+                <Grid Grid.Row="0" Margin="20,0,8,0">
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <Border Width="26" Height="26" Background="{StaticResource AccentGradient}" CornerRadius="8">
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontFamily="{StaticResource IconFont}" FontSize="13" Foreground="White"
+                                       Text="&#xE73E;" />
+                        </Border>
+                        <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" FontSize="14"
+                                   FontWeight="SemiBold" Text="全自動每日" />
+                        <TextBlock Margin="8,1,0,0" VerticalAlignment="Center" FontSize="11"
+                                   Foreground="{StaticResource TextMuteBrush}" Text="Daily Runner" />
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
+                        <Button Click="Settings_Click" Content="&#xE713;" FontSize="14"
+                                IsEnabled="{Binding IsIdle}" Style="{StaticResource TitleBarButton}"
+                                ToolTip="設定" WindowChrome.IsHitTestVisibleInChrome="True" />
+                        <Border Width="1" Height="16" Margin="6,0" Background="{StaticResource Line2}" />
+                        <Button Click="Min_Click" Content="&#xE921;" Style="{StaticResource TitleBarButton}"
+                                WindowChrome.IsHitTestVisibleInChrome="True" />
+                        <Button x:Name="MaxButton" Click="Max_Click" Content="&#xE922;"
+                                Style="{StaticResource TitleBarButton}" WindowChrome.IsHitTestVisibleInChrome="True" />
+                        <Button Click="Close_Click" Content="&#xE8BB;" Style="{StaticResource CloseButton}"
+                                WindowChrome.IsHitTestVisibleInChrome="True" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- 日期與開始按鈕 -->
+                <Grid Grid.Row="1" Margin="30,6,30,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock FontSize="12.5" Foreground="{StaticResource TextMuteBrush}" Text="今天的每日任務" />
+                        <TextBlock Margin="0,4,0,0" FontSize="30" FontWeight="Bold" Text="{Binding DateText}" />
+                        <TextBlock Margin="0,6,0,0" FontSize="13" Foreground="{StaticResource TextDimBrush}"
+                                   Text="{Binding SummaryText}" />
+                    </StackPanel>
+                    <Grid Grid.Column="1" VerticalAlignment="Center">
+                        <Button MinWidth="156" Command="{Binding StartCommand}" Style="{StaticResource PrimaryButton}"
+                                Visibility="{Binding IsIdle, Converter={StaticResource BoolVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0,1,10,0" VerticalAlignment="Center"
+                                           FontFamily="{StaticResource IconFont}" FontSize="14" Text="&#xE768;" />
+                                <TextBlock VerticalAlignment="Center" Text="開始執行" />
+                            </StackPanel>
+                        </Button>
+                        <Button MinWidth="156" Command="{Binding StopCommand}" Style="{StaticResource DangerButton}"
+                                Visibility="{Binding IsRunning, Converter={StaticResource BoolVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0,1,10,0" VerticalAlignment="Center"
+                                           FontFamily="{StaticResource IconFont}" FontSize="13" Text="&#xE71A;" />
+                                <TextBlock VerticalAlignment="Center" Text="停止" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Grid>
+
+                <!-- 總進度 -->
+                <Border Grid.Row="2" Margin="30,18,30,0" Padding="16,11"
+                        Background="#0CFFFFFF" BorderBrush="{StaticResource Line1}" BorderThickness="1"
+                        CornerRadius="12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock FontSize="12.5" Foreground="{StaticResource TextDimBrush}"
+                                   Text="{Binding CurrentText}" TextTrimming="CharacterEllipsis" Margin="0,0,70,0" />
+                        <TextBlock HorizontalAlignment="Right" FontFamily="{StaticResource MonoFont}" FontSize="12.5"
+                                   Foreground="{StaticResource TextDimBrush}" Text="{Binding ProgressText}" />
+                        <ProgressBar Grid.Row="1" Margin="0,9,0,0" Maximum="1"
+                                     Style="{StaticResource SlimProgress}" Value="{Binding Progress, Mode=OneWay}" />
+                    </Grid>
+                </Border>
+
+                <!-- 清單標題 -->
+                <Grid Grid.Row="3" Margin="30,18,30,8">
+                    <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock FontSize="15" FontWeight="SemiBold" Text="執行順序" />
+                        <TextBlock Margin="12,2,0,0" VerticalAlignment="Center" FontSize="12"
+                                   Foreground="{StaticResource TextMuteBrush}"
+                                   Text="拖曳卡片調整順序 · 右側開關決定是否執行" />
+                    </StackPanel>
+                    <Button HorizontalAlignment="Right" Click="AddTask_Click" IsEnabled="{Binding IsIdle}"
+                            Style="{StaticResource GhostButton}" Height="32">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Margin="0,1,7,0" VerticalAlignment="Center"
+                                       FontFamily="{StaticResource IconFont}" FontSize="11" Text="&#xE710;" />
+                            <TextBlock VerticalAlignment="Center" Text="新增任務" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- 任務清單 -->
+                <ScrollViewer x:Name="TaskScroll" Grid.Row="4" Padding="30,0,24,8" Focusable="False"
+                              VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <ItemsControl x:Name="TaskList" Focusable="False"
+                                      ItemTemplate="{StaticResource TaskCardTemplate}"
+                                      ItemsSource="{Binding Tasks}"
+                                      LostMouseCapture="TaskList_LostMouseCapture"
+                                      PreviewMouseLeftButtonDown="TaskList_PreviewMouseLeftButtonDown"
+                                      PreviewMouseLeftButtonUp="TaskList_PreviewMouseLeftButtonUp"
+                                      PreviewMouseMove="TaskList_PreviewMouseMove" />
+                        <TextBlock Margin="0,40,0,0" HorizontalAlignment="Center" FontSize="13"
+                                   Foreground="{StaticResource TextMuteBrush}"
+                                   Text="還沒有任務，點右上方「新增任務」開始設定"
+                                   Visibility="{Binding HasNoTasks, Converter={StaticResource BoolVis}}" />
+                    </Grid>
+                </ScrollViewer>
+
+                <!-- 執行紀錄 -->
+                <Border Grid.Row="5" Background="{StaticResource PanelBg}" BorderBrush="{StaticResource Line1}"
+                        BorderThickness="0,1,0,0">
+                    <Grid Margin="30,10,24,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <ToggleButton x:Name="LogToggle" Content="執行紀錄" IsChecked="True"
+                                          Style="{StaticResource ExpanderToggle}" />
+                            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                <Button Click="OpenLogs_Click" Content="開啟記錄資料夾" Style="{StaticResource SmallGhostButton}" />
+                                <Button Command="{Binding ClearLogCommand}" Content="清除" Style="{StaticResource SmallGhostButton}" />
+                            </StackPanel>
+                        </Grid>
+                        <ScrollViewer x:Name="LogScroll" Grid.Row="1" Height="118" Margin="0,8,0,0"
+                                      VerticalScrollBarVisibility="Auto"
+                                      Visibility="{Binding IsChecked, ElementName=LogToggle, Converter={StaticResource BoolVis}}">
+                            <ItemsControl ItemTemplate="{StaticResource LogTemplate}" ItemsSource="{Binding Logs}" />
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- 倒數遮罩（排程啟動、關機、睡眠） -->
+            <Grid Background="#B3070910" Visibility="{Binding CountdownVisible, Converter={StaticResource BoolVis}}">
+                <Border Width="380" Padding="30,28" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Background="{StaticResource CardBg}" BorderBrush="{StaticResource Line2}"
+                        BorderThickness="1" CornerRadius="18">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="40" Opacity="0.5" ShadowDepth="10" Direction="270" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock HorizontalAlignment="Center" FontSize="16" FontWeight="SemiBold"
+                                   Text="{Binding CountdownTitle}" TextAlignment="Center" TextWrapping="Wrap" />
+                        <TextBlock Margin="0,14,0,2" HorizontalAlignment="Center" FontSize="60" FontWeight="Bold"
+                                   Foreground="{StaticResource AccentGradient}" Text="{Binding CountdownSeconds}" />
+                        <TextBlock HorizontalAlignment="Center" FontSize="12.5"
+                                   Foreground="{StaticResource TextMuteBrush}" Text="秒" />
+                        <Button MinWidth="130" Margin="0,22,0,0" HorizontalAlignment="Center"
+                                Command="{Binding CancelCountdownCommand}" Content="取消"
+                                Style="{StaticResource SecondaryButton}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

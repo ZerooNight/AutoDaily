@@ -1,0 +1,16 @@
+<Application x:Class="AutoDaily.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:AutoDaily.Views"
+             ShutdownMode="OnMainWindowClose">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Theme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <v:HexBrushConverter x:Key="HexBrush" />
+            <v:EmptyToCollapsedConverter x:Key="EmptyCollapsed" />
+            <BooleanToVisibilityConverter x:Key="BoolVis" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

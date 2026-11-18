@@ -1,0 +1,118 @@
+<Window x:Class="AutoDaily.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="設定"
+        Width="560" MaxHeight="900" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        WindowStyle="None" ResizeMode="NoResize"
+        Background="{StaticResource WindowBg}"
+        FontFamily="{StaticResource UiFont}"
+        Foreground="{StaticResource TextBrush}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Ideal">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="50" GlassFrameThickness="0" ResizeBorderThickness="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Border Background="{StaticResource WindowBg}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Margin="24,0,8,0">
+                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" FontFamily="{StaticResource IconFont}" FontSize="14"
+                               Foreground="{StaticResource TextDimBrush}" Text="&#xE713;" />
+                    <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" FontSize="15" FontWeight="SemiBold" Text="設定" />
+                </StackPanel>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Center" Click="Cancel_Click"
+                        Content="&#xE8BB;" Style="{StaticResource CloseButton}"
+                        WindowChrome.IsHitTestVisibleInChrome="True" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="1" Padding="24,0,24,22" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- 完成後 -->
+                    <TextBlock Margin="0,4,0,8" Style="{StaticResource FieldLabel}" Text="全部完成後" />
+                    <Border HorizontalAlignment="Left" Padding="2" Background="{StaticResource InputBg}"
+                            BorderBrush="#2A3144" BorderThickness="1" CornerRadius="10">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="PostNone" Content="不做任何事" GroupName="post" Style="{StaticResource SegmentRadio}" />
+                            <RadioButton x:Name="PostClose" Content="關閉本程式" GroupName="post" Style="{StaticResource SegmentRadio}" />
+                            <RadioButton x:Name="PostSleep" Content="睡眠" GroupName="post" Style="{StaticResource SegmentRadio}" />
+                            <RadioButton x:Name="PostShutdown" Content="關機" GroupName="post" Style="{StaticResource SegmentRadio}" />
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Style="{StaticResource HintText}" Text="睡眠與關機前會倒數 60 秒，期間可以取消。" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="任務之間等待（秒）" />
+                    <TextBox x:Name="DelayBox" Width="120" HorizontalAlignment="Left" />
+
+                    <!-- 排程 -->
+                    <Border Margin="0,22,0,0" Padding="18,16" Background="{StaticResource CardBg}"
+                            BorderBrush="{StaticResource Line1}" BorderThickness="1" CornerRadius="14">
+                        <StackPanel>
+                            <Grid>
+                                <StackPanel>
+                                    <TextBlock FontSize="14" FontWeight="SemiBold" Text="每天定時自動執行" />
+                                    <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="{StaticResource TextMuteBrush}"
+                                               Text="透過 Windows 工作排程器，在指定時間自動開啟本程式並開始執行。" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <CheckBox x:Name="ScheduleToggle" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                          Style="{StaticResource ToggleSwitch}" />
+                            </Grid>
+                            <StackPanel IsEnabled="{Binding IsChecked, ElementName=ScheduleToggle}">
+                                <StackPanel Margin="0,14,0,0" Orientation="Horizontal">
+                                    <TextBlock VerticalAlignment="Center" FontSize="13" Foreground="{StaticResource TextDimBrush}" Text="每天" />
+                                    <TextBox x:Name="TimeBox" Width="90" Margin="10,0" HorizontalContentAlignment="Center"
+                                             FontFamily="{StaticResource MonoFont}" />
+                                    <TextBlock VerticalAlignment="Center" FontSize="13" Foreground="{StaticResource TextDimBrush}" Text="開始（24 小時制，例如 05:00）" />
+                                </StackPanel>
+                                <CheckBox x:Name="CatchUpToggle" Margin="0,14,0,0" Content="錯過時間（電腦沒開）時，開機登入後補執行"
+                                          Style="{StaticResource ToggleSwitch}" />
+                                <CheckBox x:Name="WakeToggle" Margin="0,10,0,0" Content="允許喚醒睡眠中的電腦來執行"
+                                          Style="{StaticResource ToggleSwitch}" />
+                            </StackPanel>
+                            <TextBlock x:Name="ScheduleStatus" Margin="0,14,0,0" FontSize="12" Foreground="{StaticResource TextMuteBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="不需等待結束的背景程式" />
+                    <TextBox x:Name="IgnoreBox" />
+                    <TextBlock Style="{StaticResource HintText}"
+                               Text="這些程式（以及它們開出來的子程式）不會被當成「還在執行」。若某個工具跑完卻一直顯示執行中，可以把殘留的常駐程式加進來。" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="設定檔位置" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="ConfigPathText" VerticalAlignment="Center" FontFamily="{StaticResource MonoFont}"
+                                   FontSize="12" Foreground="{StaticResource TextDimBrush}" TextTrimming="CharacterEllipsis" />
+                        <Button Grid.Column="1" Margin="10,0,0,0" Click="OpenFolder_Click" Content="開啟資料夾"
+                                Height="30" Style="{StaticResource SecondaryButton}" FontSize="12" />
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Border Grid.Row="2" Padding="24,14" Background="{StaticResource PanelBg}"
+                    BorderBrush="{StaticResource Line1}" BorderThickness="0,1,0,0">
+                <Grid>
+                    <TextBlock x:Name="ErrorText" Margin="0,0,210,0" VerticalAlignment="Center" FontSize="12"
+                               Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap" />
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Button MinWidth="88" Click="Cancel_Click" Content="取消" IsCancel="True"
+                                Style="{StaticResource SecondaryButton}" />
+                        <Button MinWidth="104" Height="38" Margin="10,0,0,0" Click="Save_Click" Content="儲存"
+                                FontSize="14" IsDefault="True" Style="{StaticResource PrimaryButton}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

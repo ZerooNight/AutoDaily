@@ -1,0 +1,15 @@
+# 建置輸出
+bin/
+obj/
+publish/
+
+# 執行時產生（設定與記錄放在 exe 旁邊）
+config.json
+config.json.bad
+logs/
+
+# 編輯器
+.vs/
+.vscode/
+*.user
+*.suo
